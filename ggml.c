@@ -281,10 +281,13 @@ ggml_fp16_t ggml_fp32_to_fp16(float x) {
 //
 
 #if defined(_MSC_VER) || defined(__MINGW32__)
-static int64_t timer_freq;
+static int64_t timer_freq;  // 静态变量 timer_freq，用于存储计时器的频率
 void ggml_time_init(void) {
+    // 定义一个 LARGE_INTEGER 类型的变量 frequency，用于存储计时器的频率
     LARGE_INTEGER frequency;
+    // 调用 Win32 API 函数，获取计时器的频率并存储在 frequency 变量中
     QueryPerformanceFrequency(&frequency);
+    // 将 frequency 的 QuadPart 成员赋值给 timer_freq 变量
     timer_freq = frequency.QuadPart;
 }
 int64_t ggml_time_ms(void) {
@@ -1256,14 +1259,14 @@ static const char * GGML_OP_SYMBOL[GGML_OP_COUNT] = {
 //
 // ggml object
 //
-
+// 用于表示一个通用的对象
 struct ggml_object {
-    size_t offs;
-    size_t size;
+    size_t offs;    // 对象的偏移量
+    size_t size;    // 对象的大小
 
-    struct ggml_object * next;
+    struct ggml_object * next;  // 指向下一个对象的指针
 
-    char padding[8];
+    char padding[8];    // 用于对齐的填充字节
 };
 
 static const size_t GGML_OBJECT_SIZE = sizeof(struct ggml_object);
@@ -1274,19 +1277,19 @@ static_assert(sizeof(struct ggml_tensor)%GGML_MEM_ALIGN == 0, "ggml_tensor size 
 //
 // ggml context
 //
-
+// 表示一个上下文对象，用于存储相关的内存缓冲区和对象信息
 struct ggml_context {
-    size_t mem_size;
-    void * mem_buffer;
-    bool   mem_buffer_owned;
+    size_t mem_size;    // 内存缓冲区的大小
+    void * mem_buffer;  // 内存缓冲区的数据指针
+    bool   mem_buffer_owned;    // 内存缓冲区是否该由结构体拥有
 
-    int n_objects;
+    int n_objects;  // 对象的数量
 
-    struct ggml_object * objects_begin;
-    struct ggml_object * objects_end;
+    struct ggml_object * objects_begin; // 指向对象链表的第一个对象的指针
+    struct ggml_object * objects_end;   // 指向对象链表的最后一个对象的指针
 
-    struct ggml_scratch scratch;
-    struct ggml_scratch scratch_save;
+    struct ggml_scratch scratch;    // 用于临时存储的缓冲区
+    struct ggml_scratch scratch_save;   // 用于保存之前的临时存储缓冲区的状态
 };
 
 struct ggml_context_container {

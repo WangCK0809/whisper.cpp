@@ -81,16 +81,19 @@ extern "C" {
         // token-level timestamp data
         // do not use if you haven't computed token-level timestamps
         int64_t t0;        // start time of the token
-        int64_t t1;        //   end time of the token
+        int64_t t1;        // end time of the token
 
         float vlen;        // voice length of the token
     } whisper_token_data;
 
     typedef struct whisper_model_loader {
-        void * context;
+        void * context; // 指向 void 类型的上下文数据的指针
 
+        // 函数指针，指向一个用于从上下文中读取数据的函数
         size_t (*read)(void * ctx, void * output, size_t read_size);
+        // 函数指针，指向一个用于检查是否已到达上下文的末尾的函数
         bool    (*eof)(void * ctx);
+        // 函数指针，指向一个用于关闭上下文的函数
         void  (*close)(void * ctx);
     } whisper_model_loader;
 

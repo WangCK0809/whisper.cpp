@@ -1,18 +1,23 @@
+# 获取当前platform
 ifndef UNAME_S
 UNAME_S := $(shell uname -s)
 endif
 
+# 获取当前处理器架构
 ifndef UNAME_P
 UNAME_P := $(shell uname -p)
 endif
 
+# 获取当前机器的体系结构
 ifndef UNAME_M
 UNAME_M := $(shell uname -m)
 endif
 
-CCV := $(shell $(CC) --version | head -n 1)
-CXXV := $(shell $(CXX) --version | head -n 1)
+# 获取编译器的版本信息
+CCV := $(shell $(CC) --version | head -n 1)	# 获取 C 编译器的版本信息
+CXXV := $(shell $(CXX) --version | head -n 1)	# 获取 C++ 编译器的版本信息
 
+# 检测是否在 macOS 平台上的 Arm 架构，并进行相应的处理
 # Mac OS + Arm can report x86_64
 # ref: https://github.com/ggerganov/whisper.cpp/issues/66#issuecomment-1282546789
 ifeq ($(UNAME_S),Darwin)
@@ -30,10 +35,12 @@ endif
 # Compile flags
 #
 
+# 定义了编译时的flags
 CFLAGS   = -I.              -O3 -std=c11   -fPIC
 CXXFLAGS = -I. -I./examples -O3 -std=c++11 -fPIC
 LDFLAGS  =
 
+# 根据操作系统类型为编译标志(CFLAGS和CXXFLAGS)添加适当的选项
 # OS specific
 # TODO: support Windows
 ifeq ($(UNAME_S),Linux)
@@ -56,6 +63,7 @@ endif
 # Architecture specific
 # TODO: probably these flags need to be tweaked on some architectures
 #       feel free to update the Makefile for your architecture and send a pull request or issue
+# 根据不同的系统架构和选项设置相应的编译选项
 ifeq ($(UNAME_M),$(filter $(UNAME_M),x86_64 i686))
 	ifeq ($(UNAME_S),Darwin)
 		CFLAGS += -mf16c
@@ -158,24 +166,24 @@ ifneq ($(filter armv8%,$(UNAME_M)),)
 endif
 
 #
-# Print build information
+# Print build information 打印构建信息
 #
 
 $(info I whisper.cpp build info: )
-$(info I UNAME_S:  $(UNAME_S))
-$(info I UNAME_P:  $(UNAME_P))
-$(info I UNAME_M:  $(UNAME_M))
-$(info I CFLAGS:   $(CFLAGS))
-$(info I CXXFLAGS: $(CXXFLAGS))
-$(info I LDFLAGS:  $(LDFLAGS))
-$(info I CC:       $(CCV))
-$(info I CXX:      $(CXXV))
+$(info I UNAME_S:  $(UNAME_S))	# 操作系统名称
+$(info I UNAME_P:  $(UNAME_P))	# 处理器类型
+$(info I UNAME_M:  $(UNAME_M))	# 机器架构类型
+$(info I CFLAGS:   $(CFLAGS))	# C 编译器的选项
+$(info I CXXFLAGS: $(CXXFLAGS))	# C++ 编译器的选项
+$(info I LDFLAGS:  $(LDFLAGS))	# 链接器的选项
+$(info I CC:       $(CCV))		# C 编译器的版本
+$(info I CXX:      $(CXXV))		# C++ 编译器的版本
 $(info )
 
 default: main
 
 #
-# Build library
+# Build library 构建库文件
 #
 
 ggml.o: ggml.c ggml.h
@@ -194,14 +202,15 @@ clean:
 	rm -f *.o main stream command talk bench libwhisper.a libwhisper.so
 
 #
-# Examples
+# Examples 构建示例程序
 #
 
-CC_SDL=`sdl2-config --cflags --libs`
+CC_SDL=`sdl2-config --cflags --libs`	# 获取 SDL2 的编译选项和库链接选项
 
 SRC_COMMON = examples/common.cpp
 SRC_COMMON_SDL = examples/common-sdl.cpp
 
+# 不同示例程序的构建规则
 main: examples/main/main.cpp $(SRC_COMMON) ggml.o whisper.o
 	$(CXX) $(CXXFLAGS) examples/main/main.cpp $(SRC_COMMON) ggml.o whisper.o -o main $(LDFLAGS)
 	./main -h
@@ -222,6 +231,7 @@ bench: examples/bench/bench.cpp ggml.o whisper.o
 # Audio samples
 #
 
+# 用于下载音频样本并将其转换为 16 位 WAV 格式
 # download a few audio samples into folder "./samples":
 .PHONY: samples
 samples:
@@ -242,6 +252,7 @@ samples:
 # Models
 #
 
+# 定义了几个模型相关的目标和一个测试目标
 # if not already downloaded, the following targets download the specified model and
 # runs it on all samples in the folder "./samples":
 
@@ -256,6 +267,8 @@ samples:
 .PHONY: large-v1
 .PHONY: large
 
+# 定义多个目标，用于下载和运行特定的模型以及运行测试。
+# 它依赖于 main 目标，并通过执行相应的脚本来完成下载、模型运行和测试操作
 tiny.en tiny base.en base small.en small medium.en medium large-v1 large: main
 	bash ./models/download-ggml-model.sh $@
 	@echo ""

@@ -220,6 +220,7 @@ static const std::map<std::string, std::pair<int, std::string>> g_lang = {
 
 static const size_t MB = 1024*1024;
 
+// 模型类型到内存大小的map
 static const std::map<e_model, size_t> MEM_REQ_SCRATCH0 = {
     { MODEL_TINY,     12ull*MB },
     { MODEL_BASE,     15ull*MB },
@@ -292,6 +293,7 @@ static const std::map<e_model, size_t> MEM_REQ_DECODE = {
     { MODEL_LARGE,    27ull*MB },
 };
 
+// 表示梅尔频谱数据？
 struct whisper_mel {
     int n_len;
     int n_mel;
@@ -343,11 +345,11 @@ struct whisper_segment {
 // medium
 // hparams: {
 // 'n_mels': 80,
-// 'n_vocab': 51864,
 // 'n_audio_ctx': 1500,
 // 'n_audio_state': 1024,
 // 'n_audio_head': 16,
 // 'n_audio_layer': 24,
+// 'n_vocab': 51864,
 // 'n_text_ctx': 448,
 // 'n_text_state': 1024,
 // 'n_text_head': 16,
@@ -355,17 +357,19 @@ struct whisper_segment {
 // }
 //
 // default hparams (Whisper tiny)
+// 该结构体对应：whisper/model.py/ModelDimensions
 struct whisper_hparams {
-    int32_t n_vocab       = 51864;
+    int32_t n_mels        = 80;
     int32_t n_audio_ctx   = 1500;
     int32_t n_audio_state = 384;
     int32_t n_audio_head  = 6;
     int32_t n_audio_layer = 4;
+
+    int32_t n_vocab       = 51864;
     int32_t n_text_ctx    = 448;
     int32_t n_text_state  = 384;
     int32_t n_text_head   = 6;
     int32_t n_text_layer  = 4;
-    int32_t n_mels        = 80;
     int32_t f16           = 1;
 };
 
@@ -467,11 +471,12 @@ struct whisper_kv_cache {
     int n; // number of tokens currently in the cache
 };
 
+// 该结构体对应：whisper/model.py/Whisper
 struct whisper_model {
-    e_model type = MODEL_UNKNOWN;
+    e_model type = MODEL_UNKNOWN;   // 模型类型
 
-    whisper_hparams hparams;
-    whisper_filters filters;
+    whisper_hparams hparams;    // 模型超参数
+    whisper_filters filters;    // filter信息
 
     // encoder.positional_embedding
     struct ggml_tensor * e_pe;
@@ -502,13 +507,13 @@ struct whisper_model {
     std::vector<whisper_layer_decoder> layers_decoder;
 
     // context
-    struct ggml_context * ctx;
+    struct ggml_context * ctx;  // 用于存储上下文信息
 
     // the model memory buffer is read-only and can be shared between processors
-    std::vector<uint8_t> * buf;
+    std::vector<uint8_t> * buf; // 用于存储模型的内存缓冲区
 
     // tensors
-    int n_loaded;
+    int n_loaded;   // 记录已加载的张量数量s
     std::map<std::string, struct ggml_tensor *> tensors;
 };
 
@@ -527,7 +532,7 @@ struct whisper_sequence {
 
 // TAGS: WHISPER_DECODER_INIT
 struct whisper_decoder {
-    // each decoders keeps its own KV-cache
+    // each decoder keeps its own KV-cache
     whisper_kv_cache kv_self;
 
     // the currently generated sequence of tokens
@@ -563,10 +568,10 @@ struct whisper_context {
 
     ggml_type wtype; // weight type (FP32 or FP16)
 
-    whisper_mel mel;
+    whisper_mel mel;    // 表示梅尔频谱数据
 
-    whisper_model model;
-    whisper_vocab vocab;
+    whisper_model model;    // 模型
+    whisper_vocab vocab;    // 词表
 
     // cross-attention KV cache for the decoders
     // shared between all decoders
@@ -635,8 +640,10 @@ struct whisper_context {
     }
 };
 
+// 用于安全读取数据并进行字节交换
 template<typename T>
 static void read_safe(whisper_model_loader * loader, T & dest) {
+    // 从数据源中读取数据，并存储到 dest 中
     loader->read(loader->context, &dest, sizeof(T));
     BYTESWAP_VALUE(dest);
 }
@@ -729,6 +736,7 @@ static bool whisper_model_load(struct whisper_model_loader * loader, whisper_con
     auto & vocab = wctx.vocab;
 
     // verify magic
+    // 验证模型数据的魔数
     {
         uint32_t magic;
         read_safe(loader, magic);
@@ -798,6 +806,7 @@ static bool whisper_model_load(struct whisper_model_loader * loader, whisper_con
         // print memory requirements
         {
             // this is the total memory required to run the inference
+            // 计算了推理所需的内存大小
             const size_t mem_required =
                      MEM_REQ_SCRATCH0.at (model.type) +
                      MEM_REQ_SCRATCH1.at (model.type) +
@@ -808,6 +817,7 @@ static bool whisper_model_load(struct whisper_model_loader * loader, whisper_con
                 scale*std::max(MEM_REQ_ENCODE.at(model.type), MEM_REQ_DECODE.at(model.type));
 
             // this is the memory required by one decoder
+            // 计算单个解码器的内存需求
             const size_t mem_required_decoder =
                 scale*MEM_REQ_KV_SELF.at(model.type);
 
@@ -818,9 +828,11 @@ static bool whisper_model_load(struct whisper_model_loader * loader, whisper_con
         // initialize all memory buffers
         // always have at least one decoder
 
+        // 初始化内存缓冲区，并将大小调整为模型类型所需内存大小
         wctx.model.buf = new std::vector<uint8_t>();
         wctx.model.buf->resize(scale*MEM_REQ_MODEL.at(model.type));
 
+        // 初始化其他缓冲区：分配内存并调整大小
         if (!kv_cache_init(model.hparams, scale*MEM_REQ_KV_SELF.at(model.type), wctx.decoders[0].kv_self, wctx.wtype, model.hparams.n_text_ctx)) {
             fprintf(stderr, "%s: kv_cache_init() failed for self-attention cache\n", __func__);
             return false;
@@ -877,6 +889,7 @@ static bool whisper_model_load(struct whisper_model_loader * loader, whisper_con
 
         tmp.reserve(128);
 
+        // 读取词汇并构建词汇表：循环依次读取每个词汇
         for (int i = 0; i < n_vocab; i++) {
             uint32_t len;
             read_safe(loader, len);
@@ -897,6 +910,7 @@ static bool whisper_model_load(struct whisper_model_loader * loader, whisper_con
             //printf("%s: vocab[%d] = '%s'\n", __func__, i, word.c_str());
         }
 
+        // 根据模型的配置进行适应性调整
         vocab.n_vocab = model.hparams.n_vocab;
         if (vocab.is_multilingual()) {
             vocab.token_eot++;
@@ -907,6 +921,7 @@ static bool whisper_model_load(struct whisper_model_loader * loader, whisper_con
             vocab.token_beg++;
         }
 
+        // 添加额外的token
         if (n_vocab < model.hparams.n_vocab) {
             fprintf(stderr, "%s: adding %d extra tokens\n", __func__, model.hparams.n_vocab - n_vocab);
             for (int i = n_vocab; i < model.hparams.n_vocab; i++) {
@@ -930,6 +945,7 @@ static bool whisper_model_load(struct whisper_model_loader * loader, whisper_con
             }
         }
 
+        // 为以下变量分配和预留内存
         wctx.logits.reserve(vocab.n_vocab*model.hparams.n_text_ctx);
 
         wctx.logits_id.reserve(n_vocab);
@@ -2508,7 +2524,7 @@ static std::vector<whisper_vocab::id> tokenize(const whisper_vocab & vocab, cons
 //
 
 struct whisper_context * whisper_init_from_file(const char * path_model) {
-    whisper_model_loader loader = {};
+    whisper_model_loader loader = {};   // 空初始化
 
     fprintf(stderr, "%s: loading model from '%s'\n", __func__, path_model);
 
@@ -2580,12 +2596,14 @@ struct whisper_context * whisper_init(struct whisper_model_loader * loader) {
     whisper_context * ctx = new whisper_context;
 
     if (!whisper_model_load(loader, *ctx)) {
+        // 如果加载模型失败，则关闭loader和context
         loader->close(loader->context);
         fprintf(stderr, "%s: failed to load model\n", __func__);
         delete ctx;
         return nullptr;
     }
 
+    // 加载模型成功后，关闭loader和context
     loader->close(loader->context);
 
     return ctx;

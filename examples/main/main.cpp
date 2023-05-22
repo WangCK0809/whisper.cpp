@@ -2,12 +2,12 @@
 
 #include "whisper.h"
 
-#include <cmath>
-#include <fstream>
-#include <cstdio>
-#include <string>
-#include <thread>
-#include <vector>
+#include <cmath>    // 数学函数
+#include <fstream>  // 文件操作
+#include <cstdio>   // IO
+#include <string>   // 字符串处理
+#include <thread>   // 多线程
+#include <vector>   // 向量容器
 
 // Terminal color map. 10 colors grouped in ranges [0.0, 0.1, ..., 0.9]
 // Lowest is red, middle is yellow, highest is green.
@@ -48,6 +48,7 @@ void replace_all(std::string & s, const std::string & search, const std::string 
 }
 
 // command-line parameters
+// 该struct用于：存储命令行参数的值和设置的参数选项
 struct whisper_params {
     int32_t n_threads    = std::min(4, (int32_t) std::thread::hardware_concurrency());
     int32_t n_processors =  1;
@@ -496,9 +497,7 @@ int main(int argc, char ** argv) {
     }
 
     // whisper init
-
     struct whisper_context * ctx = whisper_init_from_file(params.model.c_str());
-
     if (ctx == nullptr) {
         fprintf(stderr, "error: failed to initialize whisper context\n");
         return 3;
@@ -506,7 +505,6 @@ int main(int argc, char ** argv) {
 
     // initial prompt
     std::vector<whisper_token> prompt_tokens;
-
     if (!params.prompt.empty()) {
         prompt_tokens.resize(1024);
         prompt_tokens.resize(whisper_tokenize(ctx, params.prompt.c_str(), prompt_tokens.data(), prompt_tokens.size()));
@@ -601,7 +599,7 @@ int main(int argc, char ** argv) {
                 wparams.new_segment_callback_user_data = &user_data;
             }
 
-            // example for abort mechanism
+            // example for abort mechanism  中止机制示例
             // in this example, we do not abort the processing, but we could if the flag is set to true
             // the callback is called before every encoder run - if it returns false, the processing is aborted
             {

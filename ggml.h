@@ -197,6 +197,7 @@ ggml_fp16_t ggml_fp32_to_fp16(float x);
 struct ggml_object;
 struct ggml_context;
 
+// 定义了一组包括不同精度的整数类型和浮点数类型
 enum ggml_type {
     GGML_TYPE_I8,
     GGML_TYPE_I16,
@@ -302,10 +303,11 @@ struct ggml_cgraph {
 };
 
 // scratch buffer
+// 用于表示一个临时缓冲区
 struct ggml_scratch {
-    size_t offs;
-    size_t size;
-    void * data;
+    size_t offs;        // 缓冲区的偏移量
+    size_t size;        // 缓冲区的大小
+    void * data;        // 缓冲区的数据指针
 };
 
 struct ggml_init_params {

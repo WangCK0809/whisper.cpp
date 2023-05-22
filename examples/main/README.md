@@ -2,6 +2,7 @@
 
 This is the main example demonstrating most of the functionality of the Whisper model.
 It can be used as a reference for using the `whisper.cpp` library in other projects.
+这是一个主要示例，展示了 Whisper 模型的大部分功能。它可以作为在其他项目中使用 whisper.cpp 库的参考。
 
 ```
 ./main -h
