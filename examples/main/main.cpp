@@ -321,6 +321,9 @@ bool output_txt_rtf(struct whisper_context * ctx, const char * fname,
     //     fout << text << "\n";
     // }
     for (int i = 0; i < n_segments; ++i) {
+        if (i == 0) {
+            fout << "text: ";
+        }
         const char * text = whisper_full_get_segment_text(ctx, i);
         fout << text;
     }

@@ -41,9 +41,9 @@ def main():
 
     with open(output_path.joinpath("RTF"), 'w', encoding="utf-8") as fout:
         RTF = float(total_decode_time_s / total_wav_time_s)
-        fout.writelines(f"total_decode_time_s = {total_decode_time_s}")
-        fout.writelines(f"total_wav_time_s = {total_wav_time_s}")
-        fout.writelines(f"RTF = {RTF}")
+        fout.writelines(f"total_decode_time_s = {total_decode_time_s}\n")
+        fout.writelines(f"total_wav_time_s = {total_wav_time_s}\n")
+        fout.writelines(f"RTF = {RTF}\n")
 
 
 if __name__ == '__main__':
