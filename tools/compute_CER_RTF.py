@@ -23,7 +23,7 @@ def main():
     total_wav_time_s = 0.0
 
     with open(output_path.joinpath("text"), 'w', encoding="utf-8") as fout:
-        for txt_path in glob.glob(root_path.joinpath("/*.txt")):
+        for txt_path in glob.glob(root_path.joinpath("*.txt")):
             wav_name = str(txt_path.stem)
             with open(txt_path, 'r', encoding="utf-8") as fin:
                 for line in fin.readlines():
