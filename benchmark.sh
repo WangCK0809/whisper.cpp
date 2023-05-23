@@ -1,17 +1,17 @@
 #!/bin/bash
 
-datasets="ASR20_new_test"
+# datasets="ASR20_new_test"
+datasets="ailab-test-600"
 data_root=/data1/joey.wang/speech/ASR/framework/wenet/code/decoder_wenet/benchmark/data
 
 # 设置参数
-model="./models/ggml-medium.bin"  # 模型文件路径
-language="zh"  # 语种
-output_file="output.srt"  # 输出文件路径
-
-# 清空输出文件
-> "$output_file"
+model="./models/ggml-large.bin"
+language="zh"
 
 for dataset in $datasets; do
+    output_file=./result/output_${dataset}.srt
+    # 清空输出文件
+    > "$output_file"
     wav_dir=$data_root/$dataset/wav
     # 遍历ASR_auto_test目录下的所有wav文件
     for wav_file in $wav_dir/*.wav; do
