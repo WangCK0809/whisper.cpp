@@ -9,7 +9,6 @@
 #include <thread>
 #include <vector>
 #include <cstring>
-#include <chrono>
 
 // Terminal color map. 10 colors grouped in ranges [0.0, 0.1, ..., 0.9]
 // Lowest is red, middle is yellow, highest is green.
@@ -48,21 +47,6 @@ void replace_all(std::string & s, const std::string & search, const std::string 
         s.insert(pos, replace);
     }
 }
-
-class Timer {
-  public:
-    Timer() : time_start_(std::chrono::steady_clock::now()) {}
-    void Reset() { time_start_ = std::chrono::steady_clock::now(); }
-    // return int in milliseconds
-    int Elapsed() const {
-      auto time_now = std::chrono::steady_clock::now();
-      return std::chrono::duration_cast<std::chrono::milliseconds>(
-	    time_now - time_start_).count();
-    }
-
-  private:
-    std::chrono::time_point<std::chrono::steady_clock> time_start_;
-};
 
 // command-line parameters
 struct whisper_params {
@@ -303,7 +287,7 @@ void whisper_print_segment_callback(struct whisper_context * ctx, struct whisper
     }
 }
 
-bool output_txt(struct whisper_context * ctx, const char * fname, float wav_rft) {
+bool output_txt(struct whisper_context * ctx, const char * fname) {
     std::ofstream fout(fname);
     if (!fout.is_open()) {
         fprintf(stderr, "%s: failed to open '%s' for writing\n", __func__, fname);
@@ -313,16 +297,10 @@ bool output_txt(struct whisper_context * ctx, const char * fname, float wav_rft)
     fprintf(stderr, "%s: saving output to '%s'\n", __func__, fname);
 
     const int n_segments = whisper_full_n_segments(ctx);
-    // for (int i = 0; i < n_segments; ++i) {
-    //     const char * text = whisper_full_get_segment_text(ctx, i);
-    //     fout << text << "\n";
-    // }
     for (int i = 0; i < n_segments; ++i) {
         const char * text = whisper_full_get_segment_text(ctx, i);
-        fout << text;
+        fout << text << "\n";
     }
-    fout << "\n";
-    fout << "rtf: " << wav_rft << "\n\n";
 
     return true;
 }
@@ -772,7 +750,6 @@ int main(int argc, char ** argv) {
             fprintf(stderr, "\n");
         }
 
-        float wav_rft = 0.0f;
         // run the inference
         {
             whisper_full_params wparams = whisper_full_default_params(WHISPER_SAMPLING_GREEDY);
@@ -827,14 +804,10 @@ int main(int argc, char ** argv) {
                 wparams.encoder_begin_callback_user_data = &is_aborted;
             }
 
-            Timer timer;
-            float wav_time_ms = float(pcmf32.size())/WHISPER_SAMPLE_RATE * 1000;
             if (whisper_full_parallel(ctx, wparams, pcmf32.data(), pcmf32.size(), params.n_processors) != 0) {
                 fprintf(stderr, "%s: failed to process audio\n", argv[0]);
                 return 10;
             }
-            int decode_time_ms = timer.Elapsed();
-            wav_rft = decode_time_ms / wav_time_ms;
         }
 
         // output stuff
@@ -844,7 +817,7 @@ int main(int argc, char ** argv) {
             // output to text file
             if (params.output_txt) {
                 const auto fname_txt = fname_out + ".txt";
-                output_txt(ctx, fname_txt.c_str(), wav_rft);
+                output_txt(ctx, fname_txt.c_str());
             }
 
             // output to VTT file
