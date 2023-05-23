@@ -325,8 +325,9 @@ bool output_txt_rtf(struct whisper_context * ctx, const char * fname,
         fout << text;
     }
     fout << "\n";
-    fout << "decode_time_s: " << decode_time_s << ", wav_time_s: " << wav_time_s << ", rtf: " << wav_rft << "\n";
-
+    fout << "decode_time_s: " << decode_time_s << "\n";
+    fout << "wav_time_s: " << wav_time_s << "\n";
+    fout << "wav_rft: " << wav_rft << "\n";
     return true;
 }
 
