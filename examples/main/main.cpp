@@ -303,6 +303,33 @@ void whisper_print_segment_callback(struct whisper_context * ctx, struct whisper
     }
 }
 
+bool output_txt_rtf(struct whisper_context * ctx, const char * fname, 
+                    float decode_time_ms,
+                    float wav_time_ms,
+                    float wav_rft) {
+    std::ofstream fout(fname);
+    if (!fout.is_open()) {
+        fprintf(stderr, "%s: failed to open '%s' for writing\n", __func__, fname);
+        return false;
+    }
+
+    fprintf(stderr, "%s: saving output to '%s'\n", __func__, fname);
+
+    const int n_segments = whisper_full_n_segments(ctx);
+    // for (int i = 0; i < n_segments; ++i) {
+    //     const char * text = whisper_full_get_segment_text(ctx, i);
+    //     fout << text << "\n";
+    // }
+    for (int i = 0; i < n_segments; ++i) {
+        const char * text = whisper_full_get_segment_text(ctx, i);
+        fout << text;
+    }
+    fout << "\n";
+    fout << "decode_time_ms: " << decode_time_ms << ", wav_time_ms: " << wav_time_ms << ", rtf: " << wav_rft << "\n";
+
+    return true;
+}
+
 bool output_txt(struct whisper_context * ctx, const char * fname, float wav_rft) {
     std::ofstream fout(fname);
     if (!fout.is_open()) {
@@ -773,6 +800,8 @@ int main(int argc, char ** argv) {
         }
 
         float wav_rft = 0.0f;
+        float wav_time_ms = 0.0f;
+        float decode_time_ms = 0.0f;
         // run the inference
         {
             whisper_full_params wparams = whisper_full_default_params(WHISPER_SAMPLING_GREEDY);
@@ -828,12 +857,12 @@ int main(int argc, char ** argv) {
             }
 
             Timer timer;
-            float wav_time_ms = float(pcmf32.size())/WHISPER_SAMPLE_RATE * 1000;
+            wav_time_ms = float(pcmf32.size())/WHISPER_SAMPLE_RATE * 1000;
             if (whisper_full_parallel(ctx, wparams, pcmf32.data(), pcmf32.size(), params.n_processors) != 0) {
                 fprintf(stderr, "%s: failed to process audio\n", argv[0]);
                 return 10;
             }
-            int decode_time_ms = timer.Elapsed();
+            decode_time_ms = float(timer.Elapsed());
             wav_rft = decode_time_ms / wav_time_ms;
         }
 
@@ -842,7 +871,7 @@ int main(int argc, char ** argv) {
             
             printf("\nOutput txt:");
             const auto fname_txt = fname_out + ".txt";
-            output_txt(ctx, fname_txt.c_str(), wav_rft);
+            output_txt_rtf(ctx, fname_txt.c_str(), decode_time_ms, wav_rft, wav_rft);
 
             // // output to text file
             // if (params.output_txt) {
