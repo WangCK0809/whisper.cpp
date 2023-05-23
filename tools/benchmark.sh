@@ -27,13 +27,14 @@ for model_scale in $model_scales; do
             # 在输出文件中插入一个空行作为音频之间的分隔符
             # echo "" >> "$output_file"
         done
-        tmp_dir=$wav_dir/output_${model_scale}_${dataset}
-        mkdir -p $tmp_dir
-        mv $wav_dir/*.wav.txt $tmp_dir/
         echo "End decoding dataset: $dataset"
 
         echo "merge result and compute RTF"
         python3 ./tools/compute_CER_RTF.py -wav_dir $wav_dir -output_dir $output_dir
+
+        tmp_dir=$wav_dir/output_${model_scale}_${dataset}
+        mkdir -p $tmp_dir
+        mv $wav_dir/*.wav.txt $tmp_dir/
     done
 done
 
