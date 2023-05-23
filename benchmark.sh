@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # datasets="ASR20_new_test"
-datasets="ailab-test-600"
+# datasets="ailab-test-600"
+datasets="test"
 data_root=/data1/joey.wang/speech/ASR/framework/wenet/code/decoder_wenet/benchmark/data
 
 # 设置参数
