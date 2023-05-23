@@ -839,49 +839,52 @@ int main(int argc, char ** argv) {
 
         // output stuff
         {
-            printf("\n");
+            
+            printf("\nOutput txt:");
+            const auto fname_txt = fname_out + ".txt";
+            output_txt(ctx, fname_txt.c_str(), wav_rft);
 
-            // output to text file
-            if (params.output_txt) {
-                const auto fname_txt = fname_out + ".txt";
-                output_txt(ctx, fname_txt.c_str(), wav_rft);
-            }
+            // // output to text file
+            // if (params.output_txt) {
+            //     const auto fname_txt = fname_out + ".txt";
+            //     output_txt(ctx, fname_txt.c_str(), wav_rft);
+            // }
 
-            // output to VTT file
-            if (params.output_vtt) {
-                const auto fname_vtt = fname_out + ".vtt";
-                output_vtt(ctx, fname_vtt.c_str());
-            }
+            // // output to VTT file
+            // if (params.output_vtt) {
+            //     const auto fname_vtt = fname_out + ".vtt";
+            //     output_vtt(ctx, fname_vtt.c_str());
+            // }
 
-            // output to SRT file
-            if (params.output_srt) {
-                const auto fname_srt = fname_out + ".srt";
-                output_srt(ctx, fname_srt.c_str(), params);
-            }
+            // // output to SRT file
+            // if (params.output_srt) {
+            //     const auto fname_srt = fname_out + ".srt";
+            //     output_srt(ctx, fname_srt.c_str(), params);
+            // }
 
-            // output to WTS file
-            if (params.output_wts) {
-                const auto fname_wts = fname_out + ".wts";
-                output_wts(ctx, fname_wts.c_str(), fname_inp.c_str(), params, float(pcmf32.size() + 1000)/WHISPER_SAMPLE_RATE);
-            }
+            // // output to WTS file
+            // if (params.output_wts) {
+            //     const auto fname_wts = fname_out + ".wts";
+            //     output_wts(ctx, fname_wts.c_str(), fname_inp.c_str(), params, float(pcmf32.size() + 1000)/WHISPER_SAMPLE_RATE);
+            // }
 
-            // output to CSV file
-            if (params.output_csv) {
-                const auto fname_csv = fname_out + ".csv";
-                output_csv(ctx, fname_csv.c_str());
-            }
+            // // output to CSV file
+            // if (params.output_csv) {
+            //     const auto fname_csv = fname_out + ".csv";
+            //     output_csv(ctx, fname_csv.c_str());
+            // }
 
-            // output to JSON file
-            if (params.output_jsn) {
-                const auto fname_jsn = fname_out + ".json";
-                output_json(ctx, fname_jsn.c_str(), params);
-            }
+            // // output to JSON file
+            // if (params.output_jsn) {
+            //     const auto fname_jsn = fname_out + ".json";
+            //     output_json(ctx, fname_jsn.c_str(), params);
+            // }
 
-            // output to LRC file
-            if (params.output_lrc) {
-                const auto fname_lrc = fname_out + ".lrc";
-                output_lrc(ctx, fname_lrc.c_str());
-            }
+            // // output to LRC file
+            // if (params.output_lrc) {
+            //     const auto fname_lrc = fname_out + ".lrc";
+            //     output_lrc(ctx, fname_lrc.c_str());
+            // }
         }
     }
 
