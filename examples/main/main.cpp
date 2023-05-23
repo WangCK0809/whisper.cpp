@@ -304,8 +304,8 @@ void whisper_print_segment_callback(struct whisper_context * ctx, struct whisper
 }
 
 bool output_txt_rtf(struct whisper_context * ctx, const char * fname, 
-                    float decode_time_ms,
-                    float wav_time_ms,
+                    float decode_time_s,
+                    float wav_time_s,
                     float wav_rft) {
     std::ofstream fout(fname);
     if (!fout.is_open()) {
@@ -325,7 +325,7 @@ bool output_txt_rtf(struct whisper_context * ctx, const char * fname,
         fout << text;
     }
     fout << "\n";
-    fout << "decode_time_ms: " << decode_time_ms << ", wav_time_ms: " << wav_time_ms << ", rtf: " << wav_rft << "\n";
+    fout << "decode_time_s: " << decode_time_s << ", wav_time_s: " << wav_time_s << ", rtf: " << wav_rft << "\n";
 
     return true;
 }
@@ -800,8 +800,8 @@ int main(int argc, char ** argv) {
         }
 
         float wav_rft = 0.0f;
-        float wav_time_ms = 0.0f;
-        float decode_time_ms = 0.0f;
+        float wav_time_s = 0.0f;
+        float decode_time_s = 0.0f;
         // run the inference
         {
             whisper_full_params wparams = whisper_full_default_params(WHISPER_SAMPLING_GREEDY);
@@ -856,14 +856,14 @@ int main(int argc, char ** argv) {
                 wparams.encoder_begin_callback_user_data = &is_aborted;
             }
 
+            wav_time_s = float(pcmf32.size())/WHISPER_SAMPLE_RATE;
             Timer timer;
-            wav_time_ms = float(pcmf32.size())/WHISPER_SAMPLE_RATE * 1000;
             if (whisper_full_parallel(ctx, wparams, pcmf32.data(), pcmf32.size(), params.n_processors) != 0) {
                 fprintf(stderr, "%s: failed to process audio\n", argv[0]);
                 return 10;
             }
-            decode_time_ms = float(timer.Elapsed());
-            wav_rft = decode_time_ms / wav_time_ms;
+            decode_time_s = float(timer.Elapsed()) / 1000;
+            wav_rft = decode_time_s / wav_time_s;
         }
 
         // output stuff
@@ -871,7 +871,7 @@ int main(int argc, char ** argv) {
             
             printf("\nOutput txt:");
             const auto fname_txt = fname_out + ".txt";
-            output_txt_rtf(ctx, fname_txt.c_str(), decode_time_ms, wav_rft, wav_rft);
+            output_txt_rtf(ctx, fname_txt.c_str(), decode_time_s, wav_time_s, wav_rft);
 
             // // output to text file
             // if (params.output_txt) {
