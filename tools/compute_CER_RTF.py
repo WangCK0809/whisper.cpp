@@ -29,7 +29,7 @@ def main():
                 for line in fin.readlines():
                     if line.startswith("text"):
                         out_line = line.lstrip("text: ").rstrip("\r\t\n ")
-                        fout.writelines(wav_name + " " + out_line)
+                        fout.writelines(wav_name + " " + out_line + "\n")
                     elif line.startswith("decode_time_s"):
                         decode_time_s = float(line.lstrip("decode_time_s: ").rstrip("\r\t\n "))
                         total_decode_time_s += decode_time_s
