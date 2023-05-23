@@ -17,7 +17,7 @@ def main():
     args = parser.parse_args()
 
     root_path = Path(args.wav_dir)
-    output_path = Path(args.output_file)    # # text | RTF | CER
+    output_path = Path(args.output_dir)    # # text | RTF | CER
 
     total_decode_time_s = 0.0
     total_wav_time_s = 0.0
