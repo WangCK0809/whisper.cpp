@@ -30,7 +30,7 @@ for dataset in $datasets; do
         echo "End decoding dataset: $dataset"
 
         echo "merge result and compute RTF"
-        python3 ./tools/compute_CER_RTF.py -wav_dir $wav_dir -output_file $output_dir
+        python3 ./tools/compute_CER_RTF.py -wav_dir $wav_dir -output_dir $output_dir
     fi
 
     if [ $stage -le 2 ] && [ $stop_stage -ge 2 ]; then
