@@ -1,12 +1,13 @@
 #!/bin/bash
 
-# datasets="ASR20_new_test"
+datasets="ASR20_new_test"
 # datasets="ailab-test-600"
-datasets="test"
+# datasets="test"
 data_root=/data1/joey.wang/speech/ASR/framework/wenet/code/decoder_wenet/benchmark/data
 
 # 设置参数
-model="./models/ggml-large.bin"
+model_scale=medium
+model="./models/ggml-${model_scale}.bin"
 language="zh"
 
 stage=1
