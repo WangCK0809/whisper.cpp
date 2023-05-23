@@ -39,3 +39,5 @@ extra/bench-gg.txt
 models/*.mlmodel
 models/*.mlmodelc
 models/*.mlpackage
+
+result/*
