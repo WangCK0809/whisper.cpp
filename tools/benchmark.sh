@@ -1,7 +1,7 @@
 #!/bin/bash
 
 datasets="ASR20_new_test ailab-test-600 ailab-test-20170421 ailab-test-20170615 command-20170607 huiting-test-1000"
-datasets="test1 test2"
+# datasets="test1 test2"
 data_root=/data1/joey.wang/speech/ASR/framework/wenet/code/decoder_wenet/benchmark/data
 
 # 设置参数
@@ -13,7 +13,7 @@ for model_scale in $model_scales; do
     model="./models/ggml-${model_scale}.bin"
 
     for dataset in $datasets; do
-        echo "Start decoding dataset: $dataset"
+        echo "Start decoding dataset: $dataset, model_scale: $model_scale"
         # output_file=./result/output_${dataset}.srt
         output_dir=./result/output_${model_scale}_${dataset}
         mkdir -p $output_dir
